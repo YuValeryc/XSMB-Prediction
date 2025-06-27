@@ -57,7 +57,7 @@ XSMB Prediction/
 
 ### Bước 1: Clone Repository
 ```bash
-git clone https://github.com/yourusername/xsmb-prediction.git
+git clone https://github.com/YuValeryc/XSMB-Prediction/
 cd xsmb-prediction
 ```
 
