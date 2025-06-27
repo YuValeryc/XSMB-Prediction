@@ -414,3 +414,102 @@ hr.divider { border: none; height: 1px; background-color: var(--border-color); m
     border: none;
     box-shadow: none;
 }
+
+#backtest-results-container {
+    padding: 30px;
+}
+
+.backtest-summary {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-item .label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+}
+
+.summary-item .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+.summary-item .value.hits {
+    color: var(--secondary-color);
+}
+.summary-item .value.accuracy {
+    color: var(--primary-color);
+}
+
+
+.backtest-details {
+    display: grid;
+    grid-template-columns: 1fr; /* Mặc định 1 cột */
+    gap: 30px;
+}
+
+/* 2 cột trên màn hình lớn hơn */
+@media (min-width: 992px) {
+    .backtest-details {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.backtest-list-container h4 {
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: var(--text-color);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.backtest-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.backtest-number {
+    font-size: 1.1rem;
+    font-weight: 600;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+/* Style cho số trúng */
+.backtest-number.hit {
+    background-color: var(--secondary-color);
+    color: #fff;
+    border-color: var(--secondary-color);
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(255, 107, 107, 0.5);
+}
+
+/* Style cho số trượt */
+.backtest-number.miss {
+    background-color: #fff;
+    color: var(--text-muted);
+}
+
+.list-header .tooltip-icon {
+    font-size: 0.85rem;      /* Kích thước nhỏ hơn một chút */
+    color: var(--text-muted); /* Màu xám nhẹ */
+    cursor: help;            /* Đổi con trỏ chuột thành hình dấu hỏi */
+    margin-left: 4px;        /* Một chút khoảng cách */
+}

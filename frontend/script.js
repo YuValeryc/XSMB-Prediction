@@ -1,4 +1,4 @@
-// frontend/script.js (phiên bản cuối cùng, đã sửa cấu trúc)
+// frontend/script.js (phiên bản đã sắp xếp lại)
 document.addEventListener('DOMContentLoaded', () => {
     console.log('[DEBUG] DOM Content Loaded. Script is running.');
 
@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const contentSections = document.querySelectorAll('.content-section');
     const loader = document.getElementById('loader');
 
-    // **NEU**: Mobile Menu Elements
     const menuToggleBtn = document.getElementById('menu-toggle');
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
@@ -35,8 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // History Elements
     const historyLimitInput = document.getElementById('history-limit-input');
     const showHistoryBtn = document.getElementById('show-history-btn');
-    const historyTableEl = document.getElementById('history-table');
-    
+    // **Lưu ý**: historyTableEl không còn được dùng
+
     // Chart Elements
     const generateChartBtn = document.getElementById('generate-chart-btn');
     const chartTypeSelect = document.getElementById('chart-type-select');
@@ -48,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const heatmapTitle = document.getElementById('heatmap-title');
     const distributionCard = document.getElementById('distribution-card');
 
-    // Biến để lưu trữ các biểu đồ
     let barChartInstance = null;
     let heatmapInstance = null;
     let distributionInstance = null;
@@ -70,8 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const errorData = await response.json().catch(() => ({ detail: response.statusText }));
                 throw new Error(errorData.detail || 'Lỗi không xác định từ server');
             }
-            const data = await response.json();
-            return data;
+            return await response.json();
         } catch (error) {
             console.error(`API Error on ${endpoint}:`, error);
             alert(`Lỗi: ${error.message}`);
@@ -81,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Navigation Logic ---
+    // --- Navigation & Mobile Menu Logic ---
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -91,30 +88,52 @@ document.addEventListener('DOMContentLoaded', () => {
             contentSections.forEach(section => {
                 section.classList.toggle('hidden', section.id !== targetId);
             });
-            // **NEU**: Đóng sidebar khi click vào link trên mobile
-            if (window.innerWidth <= 768) {
-                closeMobileMenu();
-            }
+            if (window.innerWidth <= 768) closeMobileMenu();
         });
     });
 
-    // --- **NEU**: Mobile Menu Logic ---
-    function openMobileMenu() {
-        sidebar.classList.add('open');
-        overlay.classList.remove('hidden');
-    }
-
-    function closeMobileMenu() {
-        sidebar.classList.remove('open');
-        overlay.classList.add('hidden');
-    }
-
-    menuToggleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        sidebar.classList.contains('open') ? closeMobileMenu() : openMobileMenu();
-    });
+    function openMobileMenu() { sidebar.classList.add('open'); overlay.classList.remove('hidden'); }
+    function closeMobileMenu() { sidebar.classList.remove('open'); overlay.classList.add('hidden'); }
+    menuToggleBtn.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.contains('open') ? closeMobileMenu() : openMobileMenu(); });
     overlay.addEventListener('click', closeMobileMenu);
     
+    // --- Result Board Rendering (Hàm dùng chung) ---
+    function createResultBoard(resultData) {
+        const boardContainer = document.createElement('div');
+        boardContainer.className = 'result-board-container';
+
+        const prizeLayout = [
+            { name: 'G.ĐB', keys: ['special'], class: 'special-prize' },
+            { name: 'G.1', keys: ['prize1'] },
+            { name: 'G.2', keys: ['prize2_1', 'prize2_2'] },
+            { name: 'G.3', keys: ['prize3_1', 'prize3_2', 'prize3_3', 'prize3_4', 'prize3_5', 'prize3_6'] },
+            { name: 'G.4', keys: ['prize4_1', 'prize4_2', 'prize4_3', 'prize4_4'] },
+            { name: 'G.5', keys: ['prize5_1', 'prize5_2', 'prize5_3', 'prize5_4', 'prize5_5', 'prize5_6'] },
+            { name: 'G.6', keys: ['prize6_1', 'prize6_2', 'prize6_3'] },
+            { name: 'G.7', keys: ['prize7_1', 'prize7_2', 'prize7_3', 'prize7_4'], class: 'prize-7' }
+        ];
+
+        prizeLayout.forEach(prize => {
+            const rowDiv = document.createElement('div');
+            rowDiv.className = 'result-row';
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'prize-name';
+            nameDiv.textContent = prize.name;
+            const numbersDiv = document.createElement('div');
+            numbersDiv.className = 'prize-numbers';
+            prize.keys.forEach(key => {
+                const numberSpan = document.createElement('span');
+                numberSpan.textContent = resultData[key] ?? 'N/A';
+                if (prize.class) numberSpan.classList.add(prize.class);
+                numbersDiv.appendChild(numberSpan);
+            });
+            rowDiv.appendChild(nameDiv);
+            rowDiv.appendChild(numbersDiv);
+            boardContainer.appendChild(rowDiv);
+        });
+        return boardContainer;
+    }
+
     // --- Dashboard Logic ---
     async function updateDashboard() {
         if (!aiPredictionsListEl) return;
@@ -134,45 +153,42 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { aiPredictionsListEl.innerHTML = `<p>Không tải được dự đoán. Lỗi: ${predictions?.error ?? 'Không xác định'}</p>`; }
         hotStatsListEl.innerHTML = ''; coldStatsListEl.innerHTML = '';
         if (hotCold && !hotCold.error) {
-            hotStatsListEl.innerHTML = `<div class="list-header">🔥 Số Nóng</div><div class="list-item"><span class="value">${(hotCold.hot ?? []).join(', ')}</span></div>`;
-            coldStatsListEl.innerHTML = `<div class="list-header">❄️ Số Lạnh (Gan)</div><div class="list-item"><span class="value">${(hotCold.cold ?? []).join(', ')}</span></div>`;
-        } else { hotStatsListEl.innerHTML = `<p>Không tải được thống kê. Lỗi: ${hotCold?.error ?? 'Không xác định'}</p>`; }
-        if (latestResult && !latestResult.error && latestResult.length > 0) { renderResultBoard(latestResult[0]); } else {
+            // Định nghĩa các chuỗi giải thích
+            const hotTooltipText = "Là những số có tần suất xuất hiện nhiều nhất trong khoảng thời gian gần đây.";
+            const coldTooltipText = "Là những số đã lâu chưa xuất hiện (lô gan).";
+
+            // Thêm thuộc tính `title` vào các thẻ div chứa header
+            hotStatsListEl.innerHTML = `
+                <div class="list-header" title="${hotTooltipText}">
+                    🔥 Số Nóng 
+                    <i class="fas fa-info-circle tooltip-icon"></i>
+                </div>
+                <div class="list-item">
+                    <span class="value">${(hotCold.hot ?? []).join(', ')}</span>
+                </div>`;
+                
+            coldStatsListEl.innerHTML = `
+                <div class="list-header" title="${coldTooltipText}">
+                    ❄️ Số Lạnh (Gan)
+                    <i class="fas fa-info-circle tooltip-icon"></i>
+                </div>
+                <div class="list-item">
+                    <span class="value">${(hotCold.cold ?? []).join(', ')}</span>
+                </div>`;
+        } else { 
+            hotStatsListEl.innerHTML = `<p>Không tải được thống kê. Lỗi: ${hotCold?.error ?? 'Không xác định'}</p>`; 
+        }
+        if (latestResult && !latestResult.error && latestResult.length > 0) {
+            const resultData = latestResult[0];
+            latestResultDateEl.textContent = new Date(resultData.date).toLocaleDateString('vi-VN');
+            resultBoardContainer.innerHTML = '';
+            resultBoardContainer.appendChild(createResultBoard(resultData));
+        } else {
             if(resultBoardContainer) resultBoardContainer.innerHTML = `<div class="card">Không tải được kết quả mới nhất.<br>Lỗi: ${latestResult?.error ?? 'Dữ liệu không có sẵn'}</div>`;
             if(latestResultDateEl) latestResultDateEl.textContent = 'N/A';
         }
     }
     
-    // --- Result Board Rendering ---
-    function renderResultBoard(resultData) {
-        if (!resultData) return;
-        const date = new Date(resultData.date);
-        latestResultDateEl.textContent = date.toLocaleDateString('vi-VN');
-        resultBoardContainer.innerHTML = '';
-        const prizeLayout = [
-            { name: 'G.ĐB', keys: ['special'], class: 'special-prize' },
-            { name: 'G.1', keys: ['prize1'] },
-            { name: 'G.2', keys: ['prize2_1', 'prize2_2'] },
-            { name: 'G.3', keys: ['prize3_1', 'prize3_2', 'prize3_3', 'prize3_4', 'prize3_5', 'prize3_6'] },
-            { name: 'G.4', keys: ['prize4_1', 'prize4_2', 'prize4_3', 'prize4_4'] },
-            { name: 'G.5', keys: ['prize5_1', 'prize5_2', 'prize5_3', 'prize5_4', 'prize5_5', 'prize5_6'] },
-            { name: 'G.6', keys: ['prize6_1', 'prize6_2', 'prize6_3'] },
-            { name: 'G.7', keys: ['prize7_1', 'prize7_2', 'prize7_3', 'prize7_4'], class: 'prize-7' }
-        ];
-        prizeLayout.forEach(prize => {
-            const rowDiv = document.createElement('div'); rowDiv.className = 'result-row';
-            const nameDiv = document.createElement('div'); nameDiv.className = 'prize-name'; nameDiv.textContent = prize.name;
-            const numbersDiv = document.createElement('div'); numbersDiv.className = 'prize-numbers';
-            prize.keys.forEach(key => {
-                const numberSpan = document.createElement('span');
-                numberSpan.textContent = resultData[key] ?? 'N/A';
-                if (prize.class) numberSpan.classList.add(prize.class);
-                numbersDiv.appendChild(numberSpan);
-            });
-            rowDiv.appendChild(nameDiv); rowDiv.appendChild(numbersDiv); resultBoardContainer.appendChild(rowDiv);
-        });
-    }
-
     // --- Deep Analysis Logic ---
     async function inspectNumber() {
         const number = numberInput.value; if (!number || !/^\d+$/.test(number) || parseInt(number, 10) < 0 || parseInt(number, 10) > 99) { alert('Vui lòng nhập một số hợp lệ từ 00 đến 99.'); return; }
@@ -192,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function renderAnalysisChart(data) {
         if (analysisChart) { analysisChart.destroy(); }
-        const historyDates = data?.appearance_history?.map(d => new Date(d)) ?? []; if (historyDates.length === 0) return;
+        if (!data?.appearance_history || data.appearance_history.length === 0) return;
         const dateLabels = [], appearanceData = []; const endDate = new Date(); const startDate = new Date(); startDate.setDate(endDate.getDate() - 365);
         for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) { dateLabels.push(d.toLocaleDateString('vi-VN')); const dateStr = d.toISOString().split('T')[0]; appearanceData.push(data.appearance_history.includes(dateStr) ? 1 : 0); }
         const ctx = analysisChartCanvas.getContext('2d'); analysisChart = new Chart(ctx, { type: 'bar', data: { labels: dateLabels, datasets: [{ label: `Sự xuất hiện của số ${data.number}`, data: appearanceData, backgroundColor: 'rgba(90, 142, 238, 0.6)', borderColor: 'rgba(90, 142, 238, 1)', borderWidth: 1 }] }, options: { scales: { y: { display: false, beginAtZero: true, ticks: { stepSize: 1 } }, x: { ticks: { maxRotation: 90, minRotation: 90, autoSkip: true, maxTicksLimit: 30 } } } } });
@@ -210,52 +226,112 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function runBacktest() {
-        const date = backtestDateSelect.value; if (!date) return; 
-        const data = await callApi('/predict/backtest', { date }); 
-        if(data && !data.error){
-            const { predictions, actual_results, hits } = data;
-            const predictionsText = `- Dự đoán của AI: [${predictions.join(', ')}]`;
-            const resultsText = `- Các số Lô đã về: [${actual_results.join(', ')}]`;
-            const hitsText = `\n- AI đã đoán trúng: ${hits.length} số [${hits.join(', ')}]`;
-            const accuracyText = `- Tỷ lệ chính xác: ${((hits.length / predictions.length) * 100).toFixed(2)}%`;
+        const date = backtestDateSelect.value;
+        if (!date) return;
 
-            backtestResultsEl.textContent = `Kết quả kiểm tra lại cho ngày ${new Date(date).toLocaleDateString('vi-VN')}:\n\n${predictionsText}\n${resultsText}\n${hitsText}\n${accuracyText}`;
+        const resultsContainer = document.getElementById('backtest-results-container');
+        resultsContainer.innerHTML = ''; // Xóa kết quả cũ
+        resultsContainer.classList.add('hidden'); // Ẩn đi trong khi tải
+
+        const data = await callApi('/predict/backtest', { date });
+
+        if (data && !data.error) {
+            const { ai_prediction, actual_result, hits, hit_count } = data;
+            const accuracy = ai_prediction.length > 0 ? ((hit_count / ai_prediction.length) * 100) : 0;
+
+            // Chuyển đổi hits thành Set để tra cứu nhanh hơn
+            const hitSet = new Set(hits.map(String));
+
+            // --- Tạo phần tóm tắt ---
+            const summaryHTML = `
+                <h3>Kết quả kiểm tra lại cho ngày ${new Date(date).toLocaleDateString('vi-VN')}</h3>
+                <div class="backtest-summary">
+                    <div class="summary-item">
+                        <span class="label">Số đã dự đoán</span>
+                        <span class="value">${ai_prediction.length}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">Số đã trúng</span>
+                        <span class="value hits">${hit_count}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="label">Tỷ lệ chính xác</span>
+                        <span class="value accuracy">${accuracy.toFixed(1)}%</span>
+                    </div>
+                </div>
+            `;
+
+            // --- Tạo phần chi tiết ---
+            // Danh sách các số AI dự đoán
+            const predictionsHTML = `
+                <div class="backtest-list-container">
+                    <h4>🔮 Các số AI đã dự đoán</h4>
+                    <div class="backtest-list">
+                        ${ai_prediction.map(num => `
+                            <div class="backtest-number ${hitSet.has(String(num)) ? 'hit' : 'miss'}">
+                                ${num}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            // Danh sách các số thực tế đã về
+            const actualsHTML = `
+                <div class="backtest-list-container">
+                    <h4>🎯 Các số Lô thực tế đã về</h4>
+                    <div class="backtest-list">
+                        ${actual_result.map(num => `
+                            <div class="backtest-number">
+                                ${num}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // --- Gộp tất cả lại và hiển thị ---
+            resultsContainer.innerHTML = `
+                ${summaryHTML}
+                <div class="backtest-details">
+                    ${predictionsHTML}
+                    ${actualsHTML}
+                </div>
+            `;
+            resultsContainer.classList.remove('hidden'); // Hiển thị kết quả
+
         } else {
-             backtestResultsEl.textContent = `Không thể lấy dữ liệu kiểm tra.\nLỗi: ${data?.error || 'Không xác định'}`;
+            resultsContainer.innerHTML = `<h3>Lỗi</h3><p>Không thể lấy dữ liệu kiểm tra. Lỗi: ${data?.error || 'Không xác định'}</p>`;
+            resultsContainer.classList.remove('hidden');
         }
     }
     
-    // --- History Logic ---
+    // --- History Logic (ĐÃ SẮP XẾP LẠI) ---
     async function showHistory() {
-        const limit = historyLimitInput.value; 
-        const data = await callApi('/history', { limit }); 
-        if (data && !data.error) { 
-            // Định dạng lại ngày tháng trước khi hiển thị
-            const formattedData = data.map(item => ({...item, date: new Date(item.date).toLocaleDateString('vi-VN')}));
-            renderGenericTable(historyTableEl, formattedData); 
-        } else { 
-            const tbody = historyTableEl.querySelector('tbody') || historyTableEl.createTBody(); 
-            tbody.innerHTML = `<tr><td colspan="100%">Không tải được lịch sử. Lỗi: ${data?.error ?? 'Không xác định'}</td></tr>`; 
+        const limit = historyLimitInput.value;
+        const data = await callApi('/history', { limit });
+        const historyContainer = document.getElementById('history-results-container');
+
+        if (data && !data.error) {
+            historyContainer.innerHTML = '';
+            if (data.length === 0) {
+                historyContainer.innerHTML = `<div class="card"><p>Không có dữ liệu lịch sử để hiển thị.</p></div>`;
+                return;
+            }
+            data.forEach(dailyResult => {
+                const historyCard = document.createElement('div');
+                historyCard.className = 'history-card';
+                const cardHeader = document.createElement('div');
+                cardHeader.className = 'history-card-header';
+                cardHeader.textContent = `Kết quả ngày ${new Date(dailyResult.date).toLocaleDateString('vi-VN')}`;
+                const resultBoard = createResultBoard(dailyResult); // Tái sử dụng hàm tạo bảng kết quả
+                historyCard.appendChild(cardHeader);
+                historyCard.appendChild(resultBoard);
+                historyContainer.appendChild(historyCard);
+            });
+        } else {
+            historyContainer.innerHTML = `<div class="card"><p>Không tải được lịch sử. Lỗi: ${data?.error ?? 'Không xác định'}</p></div>`;
         }
-    }
-    
-    function renderGenericTable(tableElement, data) {
-        if (!data || data.length === 0) return; 
-        let headers = Object.keys(data[0]);
-        // Tùy chỉnh tên và thứ tự cột
-        const displayHeaders = {
-            date: 'Ngày', special: 'Đặc Biệt', prize1: 'Giải 1', prize2_1: 'Giải 2', prize3_1: 'Giải 3', prize4_1: 'Giải 4', prize5_1: 'Giải 5', prize6_1: 'Giải 6', prize7_1: 'Giải 7'
-        };
-        const orderedHeaders = ['date', 'special', 'prize1', 'prize2_1', 'prize3_1', 'prize4_1', 'prize5_1', 'prize6_1', 'prize7_1'];
-        // Lấy các header khác không có trong danh sách trên
-        const otherHeaders = headers.filter(h => !orderedHeaders.includes(h));
-
-        headers = [...orderedHeaders, ...otherHeaders];
-
-        const thead = tableElement.querySelector('thead') || tableElement.createTHead(); 
-        const tbody = tableElement.querySelector('tbody') || tableElement.createTBody(); 
-        thead.innerHTML = `<tr>${headers.map(h => `<th>${displayHeaders[h] || h}</th>`).join('')}</tr>`; 
-        tbody.innerHTML = data.map(row => `<tr>${headers.map(h => `<td>${row[h] ?? ''}</td>`).join('')}</tr>`).join('');
     }
 
     // --- Charting Logic ---
@@ -274,8 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (context.raw === null) return 'transparent';
                 const value = context.raw.v; 
                 const alpha = (value - minVal) / (maxVal - minVal);
-                // Chuyển màu từ Xanh (thấp) -> Vàng (trung bình) -> Đỏ (cao)
-                const hue = (1 - alpha) * 120; // 120 (xanh lá) -> 0 (đỏ)
+                const hue = (1 - alpha) * 120;
                 return `hsla(${hue}, 100%, 50%, 0.8)`;
             }, 
             borderRadius: 4, radius: 15, hoverRadius: 18 }] };
@@ -301,95 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderHeatmap(heatmapChartCanvas, `Bản Đồ Nhiệt Tần Suất (${days} ngày)`, data.heatmap);
             renderDistributionChart(distributionChartCanvas, `Phân Phối Tần Suất (${days} ngày)`, data.distribution);
             distributionCard.classList.remove('hidden');
-        }
-    }
-        function createResultBoardForDay(resultData) {
-        const boardContainer = document.createElement('div');
-        boardContainer.className = 'result-board-container';
-
-        const prizeLayout = [
-            { name: 'G.ĐB', keys: ['special'], class: 'special-prize' },
-            { name: 'G.1', keys: ['prize1'] },
-            { name: 'G.2', keys: ['prize2_1', 'prize2_2'] },
-            { name: 'G.3', keys: ['prize3_1', 'prize3_2', 'prize3_3', 'prize3_4', 'prize3_5', 'prize3_6'] },
-            { name: 'G.4', keys: ['prize4_1', 'prize4_2', 'prize4_3', 'prize4_4'] },
-            { name: 'G.5', keys: ['prize5_1', 'prize5_2', 'prize5_3', 'prize5_4', 'prize5_5', 'prize5_6'] },
-            { name: 'G.6', keys: ['prize6_1', 'prize6_2', 'prize6_3'] },
-            { name: 'G.7', keys: ['prize7_1', 'prize7_2', 'prize7_3', 'prize7_4'], class: 'prize-7' }
-        ];
-
-        prizeLayout.forEach(prize => {
-            const rowDiv = document.createElement('div');
-            rowDiv.className = 'result-row';
-
-            const nameDiv = document.createElement('div');
-            nameDiv.className = 'prize-name';
-            nameDiv.textContent = prize.name;
-
-            const numbersDiv = document.createElement('div');
-            numbersDiv.className = 'prize-numbers';
-
-            prize.keys.forEach(key => {
-                const numberSpan = document.createElement('span');
-                numberSpan.textContent = resultData[key] ?? 'N/A';
-                if (prize.class) {
-                    numberSpan.classList.add(prize.class);
-                }
-                numbersDiv.appendChild(numberSpan);
-            });
-
-            rowDiv.appendChild(nameDiv);
-            rowDiv.appendChild(numbersDiv);
-            boardContainer.appendChild(rowDiv);
-        });
-
-        return boardContainer;
-    }
-
-    // Hàm render chính cho mục Lịch Sử
-    function renderHistoryResults(data) {
-        const historyContainer = document.getElementById('history-results-container');
-        historyContainer.innerHTML = ''; // Xóa kết quả cũ
-
-        if (!data || data.length === 0) {
-            historyContainer.innerHTML = `<div class="card"><p>Không có dữ liệu lịch sử để hiển thị.</p></div>`;
-            return;
-        }
-
-        // Lặp qua từng ngày và tạo một "card" kết quả
-        data.forEach(dailyResult => {
-            // Tạo thẻ chứa toàn bộ kết quả của 1 ngày
-            const historyCard = document.createElement('div');
-            historyCard.className = 'history-card';
-
-            // Tạo header cho thẻ (chứa ngày tháng)
-            const cardHeader = document.createElement('div');
-            cardHeader.className = 'history-card-header';
-            cardHeader.textContent = `Kết quả ngày ${new Date(dailyResult.date).toLocaleDateString('vi-VN')}`;
-
-            // Tạo bảng kết quả cho ngày đó
-            const resultBoard = createResultBoardForDay(dailyResult);
-
-            // Gắn header và bảng kết quả vào thẻ
-            historyCard.appendChild(cardHeader);
-            historyCard.appendChild(resultBoard);
-
-            // Gắn thẻ của ngày đó vào container chính
-            historyContainer.appendChild(historyCard);
-        });
-    }
-    
-    // Hàm chính được gọi khi bấm nút "Xem Lịch Sử"
-    async function showHistory() {
-        const limit = historyLimitInput.value;
-        const data = await callApi('/history', { limit });
-
-        if (data && !data.error) {
-            // Gọi hàm render mới thay vì renderGenericTable
-            renderHistoryResults(data);
-        } else {
-            const historyContainer = document.getElementById('history-results-container');
-            historyContainer.innerHTML = `<div class="card"><p>Không tải được lịch sử. Lỗi: ${data?.error ?? 'Không xác định'}</p></div>`;
         }
     }
     

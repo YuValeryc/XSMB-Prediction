@@ -120,23 +120,23 @@
                 <p>Chọn một ngày bất kỳ để xem AI đã dự đoán những số nào và kết quả thực tế ra sao.</p>
                 <div class="controls">
                     <select id="backtest-date-select"></select>
-                    <button id="backtest-btn">Kiểm tra</button>
+                    <button id="backtest-btn"><i class="fas fa-history"></i> Kiểm tra</button>
                 </div>
-                <div class="card">
-                    <h3>Kết quả kiểm tra</h3>
-                    <pre id="backtest-results"></pre>
+                <!-- VÙNG HIỂN THỊ KẾT QUẢ MỚI -->
+                <div id="backtest-results-container" class="card hidden"> 
+                    <!-- Nội dung sẽ được tạo bởi JavaScript -->
                 </div>
             </section>
 
             <!-- Section: Lịch Sử -->
+            
             <section id="history" class="content-section hidden">
                 <h2>Tra cứu lịch sử kết quả xổ số</h2>
                 <div class="controls">
                     <label for="history-limit-input">Xem số ngày gần nhất:</label>
                     <input type="number" id="history-limit-input" value="7" min="1" max="100">
-                    <button id="show-history-btn">Xem Lịch Sử</button>
+                    <button id="show-history-btn"><i class="fas fa-eye"></i> Xem Lịch Sử</button>
                 </div>
-                <!-- VÙNG CHỨA KẾT QUẢ MỚI -->
                 <div id="history-results-container">
                 </div>
             </section>
