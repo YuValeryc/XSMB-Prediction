@@ -1,0 +1,57 @@
+name: Daily Data and Model Update
+
+on:
+  # Lên lịch chạy tự động
+  schedule:
+    # Chạy vào lúc 12:00 UTC mỗi ngày (tức 19:00 giờ Việt Nam)
+    - cron: '0 12 * * *'
+  # Cho phép chạy thủ công từ tab Actions trên GitHub
+  workflow_dispatch:
+
+jobs:
+  update-data-and-model:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Bước 1: Checkout code từ repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          # Cần token để có thể push lại vào repo
+          token: ${{ secrets.GH_TOKEN }}
+
+      # Bước 2: Cài đặt Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # Bước 3: Cài đặt Git LFS
+      - name: Install Git LFS
+        run: |
+          git lfs install
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      # Bước 4: Cài đặt các thư viện Python
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      # Bước 5: Chạy Scraper để lấy dữ liệu mới
+      - name: Run Scraper
+        run: python scripts/scraper_fast.py
+
+      # Bước 6: Chạy Training để cập nhật model
+      - name: Run Model Training
+        run: python train_model.py
+        
+      # Bước 7: Commit và Push các file đã thay đổi (dữ liệu và model)
+      - name: Commit and push changes
+        run: |
+          git pull # Đảm bảo local đồng bộ với remote trước khi push
+          git add -A # Thêm tất cả các file thay đổi (data/*, app/model/*)
+          # Chỉ commit và push nếu có thay đổi
+          git diff --staged --quiet || git commit -m " chore: Daily data and model update"
+          git push
