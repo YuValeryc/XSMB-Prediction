@@ -9,7 +9,6 @@ def get_frequency_stats(df_sparse: pd.DataFrame, days: int) -> dict:
         
     last_n_days = df_sparse.tail(days)
     frequency = last_n_days.sum()
-    # Chỉ trả về các số đã xuất hiện
     frequency = frequency[frequency > 0].sort_values(ascending=False)
     return frequency.to_dict()
 
@@ -22,13 +21,9 @@ def get_hot_cold_numbers(df_sparse: pd.DataFrame, days: int, top_n: int) -> dict
     if df_sparse.empty:
         return {"hot": [], "cold": []}
 
-    # Tính số Nóng
     last_n_days_freq = df_sparse.tail(days).sum()
     hot_numbers = last_n_days_freq.nlargest(top_n).index.tolist()
     
-    # Tính số Lạnh (Lô Gan)
-    # Lật ngược dataframe, tính tích lũy các số 0, rồi cộng lại
-    # -> số ngày liên tiếp không về tính từ ngày gần nhất
     gan_days = (df_sparse == 0).iloc[::-1].cumprod().sum()
     cold_numbers = gan_days.nlargest(top_n).index.tolist()
     

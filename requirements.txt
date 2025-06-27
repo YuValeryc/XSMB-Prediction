@@ -9,3 +9,4 @@ gradio
 requests
 tensorflow
 numpy
+scikit-learn

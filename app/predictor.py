@@ -5,10 +5,9 @@ import tensorflow as tf
 from pathlib import Path
 
 # --- Cấu hình ---
-SEQUENCE_LENGTH = 30  # Phải khớp với giá trị khi huấn luyện mô hình
+SEQUENCE_LENGTH = 30 
 MODEL_PATH = Path(__file__).parent / "model" / "lottery_lstm.h5"
 
-# Biến toàn cục để lưu trữ mô hình, tránh tải lại mỗi lần gọi API
 _model = None
 
 def load_model():
@@ -36,8 +35,6 @@ def predict_with_lstm(df_sparse: pd.DataFrame, top_n: int = 10) -> dict:
         if not load_model():
             return {"error": f"Không thể tải mô hình. Vui lòng chạy file train_model.py trước."}
 
-    # 1. Chuẩn bị dữ liệu đầu vào
-    # Lấy `SEQUENCE_LENGTH` ngày dữ liệu gần nhất
     recent_data = df_sparse.tail(SEQUENCE_LENGTH)
     
     if len(recent_data) < SEQUENCE_LENGTH:
@@ -45,20 +42,14 @@ def predict_with_lstm(df_sparse: pd.DataFrame, top_n: int = 10) -> dict:
             "error": f"Không đủ dữ liệu để dự đoán. Cần ít nhất {SEQUENCE_LENGTH} ngày dữ liệu lịch sử."
         }
     
-    # Chỉ lấy các cột số (0-99) và chuyển thành mảng numpy
     input_data = recent_data[[str(i) for i in range(100)]].values
     
-    # Reshape dữ liệu để khớp với đầu vào của mô hình: (1, seq_length, 100)
     input_data = np.expand_dims(input_data, axis=0)
 
-    # 2. Thực hiện dự đoán
-    predictions = _model.predict(input_data)[0]  # Kết quả có shape (1, 100), lấy phần tử đầu tiên
+    predictions = _model.predict(input_data)[0] 
 
-    # 3. Xử lý kết quả
-    # Lấy chỉ số (là các con số loto) của `top_n` xác suất cao nhất
-    top_indices = np.argsort(predictions)[-top_n:][::-1] # Sắp xếp giảm dần
-    
-    # Tạo kết quả trả về
+    top_indices = np.argsort(predictions)[-top_n:][::-1] 
+
     predicted_numbers = [str(i) for i in top_indices]
     probabilities = [float(predictions[i]) for i in top_indices]
     
