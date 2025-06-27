@@ -1,9 +1,7 @@
 name: Daily Data and Model Update
 
 on:
-  # Lên lịch chạy tự động
   schedule:
-    # Chạy vào lúc 12:00 UTC mỗi ngày (tức 19:00 giờ Việt Nam)
     - cron: '0 12 * * *'
   # Cho phép chạy thủ công từ tab Actions trên GitHub
   workflow_dispatch:
