@@ -1,0 +1,10 @@
+.gitignore
+
+venv/
+__pycache__/
+data/
+app/model/
+
+Dockerfile
+.dockerignore
+README.md

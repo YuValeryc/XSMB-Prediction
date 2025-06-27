@@ -1,0 +1,148 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Soi Cầu - Phân Tích XSMB</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="loader" class="loader-container hidden">
+        <div class="loader"></div>
+    </div>
+    <!-- Lớp phủ khi menu mobile mở -->
+    <div id="overlay" class="overlay hidden"></div>
+
+    <div class="app-container">
+        <nav class="sidebar" id="sidebar">
+            <h1><i class="fa-solid fa-brain"></i> AI Soi Cầu</h1>
+            <ul>
+                <li><a href="#" class="nav-link active" data-target="dashboard"><i class="fas fa-chart-bar"></i> Bảng Điều Khiển</a></li>
+                <li><a href="#" class="nav-link" data-target="charts"><i class="fas fa-chart-line"></i> Phân Tích Biểu Đồ</a></li>
+                <li><a href="#" class="nav-link" data-target="analysis"><i class="fas fa-search"></i> Phân Tích Sâu</a></li>
+                <li><a href="#" class="nav-link" data-target="backtest"><i class="fas fa-check-circle"></i> Kiểm Tra AI</a></li>
+                <li><a href="#" class="nav-link" data-target="history"><i class="fas fa-history"></i> Lịch Sử</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <!-- Nút bật/tắt menu cho mobile -->
+            <button id="menu-toggle" class="menu-toggle-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Section: Bảng Điều Khiển -->
+            <section id="dashboard" class="content-section">
+                <div class="header">
+                    <h2>Bảng Điều Khiển</h2>
+                    <button id="refresh-dashboard-btn">Làm mới</button>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="card">
+                      <h3><i class="fa-solid fa-robot"></i> Dự Đoán AI (Lô)</h3>
+                      <div id="ai-predictions-list" class="styled-list">
+                          <!-- Nội dung sẽ được tạo bởi JavaScript -->
+                      </div>
+                  </div>
+                  <div class="card">
+                      <h3><i class="fa-solid fa-fire"></i> Thống Kê Nóng/Lạnh</h3>
+                      <div id="hot-stats-list" class="styled-list">
+                          <!-- Nội dung số nóng -->
+                      </div>
+                      <hr class="divider">
+                      <div id="cold-stats-list" class="styled-list">
+                          <!-- Nội dung số lạnh -->
+                      </div>
+                  </div>
+                    <div class="card full-width">
+                        <h3>Kết Quả Mới Nhất (<span id="latest-result-date"></span>)</h3>
+                        <div id="result-board-container">
+                            <!-- Nội dung bảng kết quả -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Phân Tích Biểu Đồ -->
+            <section id="charts" class="content-section hidden">
+              <h2>Phân Tích Dữ Liệu Trực Quan</h2>
+              <div class="controls">
+                  <label for="chart-type-select">Chọn loại phân tích:</label>
+                  <select id="chart-type-select">
+                      <option value="gan">Phân Tích Lô Gan</option>
+                      <option value="frequency">Phân Tích Tần Suất</option>
+                  </select>
+                  <label for="chart-days-input">Trong số ngày:</label>
+                  <input type="number" id="chart-days-input" value="365" min="30" max="2000">
+                  <button id="generate-chart-btn">Vẽ Biểu Đồ</button>
+              </div>
+              <div class="charts-grid">
+                  <div class="card">
+                      <h3 id="barchart-title">Top 15</h3>
+                      <canvas id="bar-chart"></canvas>
+                  </div>
+                  <div class="card">
+                      <h3 id="heatmap-title">Bản Đồ Nhiệt</h3>
+                      <canvas id="heatmap-chart"></canvas>
+                  </div>
+                  <div class="card full-width" id="distribution-card">
+                      <h3 id="distribution-title">Phân Phối Tần Suất</h3>
+                      <canvas id="distribution-chart"></canvas>
+                  </div>
+              </div>
+            </section>
+
+            <!-- Section: Phân Tích Sâu -->
+            <section id="analysis" class="content-section hidden">
+                <h2>Soi chi tiết một con số</h2>
+                <div class="controls">
+                    <input type="number" id="number-input" placeholder="Nhập số (0-99)">
+                    <button id="inspect-number-btn">Soi</button>
+                </div>
+                <div class="analysis-results">
+                    <div id="number-details" class="card"></div>
+                    <div class="card">
+                        <h3>Biểu đồ xuất hiện (365 ngày gần nhất)</h3>
+                        <canvas id="analysis-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Kiểm Tra AI -->
+            <section id="backtest" class="content-section hidden">
+                <h2>Đánh giá độ chính xác của AI trong quá khứ</h2>
+                <p>Chọn một ngày bất kỳ để xem AI đã dự đoán những số nào và kết quả thực tế ra sao.</p>
+                <div class="controls">
+                    <select id="backtest-date-select"></select>
+                    <button id="backtest-btn">Kiểm tra</button>
+                </div>
+                <div class="card">
+                    <h3>Kết quả kiểm tra</h3>
+                    <pre id="backtest-results"></pre>
+                </div>
+            </section>
+
+            <!-- Section: Lịch Sử -->
+            <section id="history" class="content-section hidden">
+                <h2>Tra cứu lịch sử kết quả xổ số</h2>
+                <div class="controls">
+                    <label for="history-limit-input">Xem số ngày gần nhất:</label>
+                    <input type="number" id="history-limit-input" value="7" min="1" max="100">
+                    <button id="show-history-btn">Xem Lịch Sử</button>
+                </div>
+                <!-- VÙNG CHỨA KẾT QUẢ MỚI -->
+                <div id="history-results-container">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>

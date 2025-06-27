@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pandas
+cloudscraper
+beautifulsoup4
+lxml
+pytz
+gradio
+requests
+tensorflow
+numpy
