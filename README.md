@@ -8,7 +8,7 @@
 Hệ thống phân tích và dự đoán xổ số miền Bắc (XSMB) sử dụng trí tuệ nhân tạo, bao gồm web scraper, mô hình LSTM, và giao diện web tương tác.
 
 ## Demo
-![Demo](frontend/demo.gif.gif)
+![Demo](frontend/demo.gif)
 
 ## Tính Năng Chính
 
