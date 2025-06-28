@@ -28,6 +28,7 @@
                 <li><a href="#" class="nav-link" data-target="analysis"><i class="fas fa-search"></i> Phân Tích Sâu</a></li>
                 <li><a href="#" class="nav-link" data-target="backtest"><i class="fas fa-check-circle"></i> Kiểm Tra AI</a></li>
                 <li><a href="#" class="nav-link" data-target="history"><i class="fas fa-history"></i> Lịch Sử</a></li>
+                <li><a href="#" class="nav-link" data-target="guide"><i class="fas fa-question-circle"></i> Hướng dẫn</a></li>
             </ul>
         </nav>
 
@@ -138,6 +139,61 @@
                     <button id="show-history-btn"><i class="fas fa-eye"></i> Xem Lịch Sử</button>
                 </div>
                 <div id="history-results-container">
+                </div>
+            </section>
+
+            <!-- Section: Hướng dẫn -->
+            <section id="guide" class="content-section hidden">
+                <h2><i class="fas fa-question-circle"></i> Hướng dẫn sử dụng trang web</h2>
+                <div class="guide-container">
+                    <div class="guide-item">
+                        <div class="guide-icon"><i class="fas fa-chart-bar"></i></div>
+                        <div class="guide-content">
+                            <h4>Bảng Điều Khiển (Dashboard)</h4>
+                            <p>Đây là trang tổng quan chính. Tại đây bạn có thể xem nhanh các thông tin quan trọng nhất:</p>
+                            <ul>
+                                <li><strong>Dự đoán của AI:</strong> Top 10 con lô có xác suất về cao nhất theo mô hình Deep Learning.</li>
+                                <li><strong>Thống kê Nóng/Lạnh:</strong> Các số đang về nhiều (nóng) và các số lâu chưa về (gan/lạnh). Di chuột vào tiêu đề để xem giải thích.</li>
+                                <li><strong>Kết quả mới nhất:</strong> Bảng kết quả xổ số của ngày gần nhất.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="guide-item">
+                        <div class="guide-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="guide-content">
+                            <h4>Phân Tích Biểu Đồ</h4>
+                            <p>Công cụ trực quan hóa dữ liệu mạnh mẽ. Bạn có thể chọn loại phân tích (Lô Gan hoặc Tần Suất) và khoảng thời gian để xem:</p>
+                            <ul>
+                                <li><strong>Biểu đồ cột:</strong> Top 15 số gan nhất hoặc về nhiều nhất.</li>
+                                <li><strong>Bản đồ nhiệt:</strong> Thể hiện độ "nóng" hoặc "lạnh" của tất cả 100 số trên một lưới 10x10.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="guide-item">
+                        <div class="guide-icon"><i class="fas fa-search"></i></div>
+                        <div class="guide-content">
+                            <h4>Phân Tích Sâu</h4>
+                            <p>Nhập một con số cụ thể (từ 00-99) và bấm "Soi" để xem tất cả thông tin chi tiết về nó: số ngày gan, tần suất xuất hiện trong các khoảng thời gian khác nhau, và biểu đồ lịch sử các ngày đã về.</p>
+                        </div>
+                    </div>
+
+                    <div class="guide-item">
+                        <div class="guide-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="guide-content">
+                            <h4>Kiểm Tra AI (Backtesting)</h4>
+                            <p>Bạn tò mò về độ chính xác của AI trong quá khứ? Hãy chọn một ngày bất kỳ và bấm "Kiểm tra". Hệ thống sẽ cho bạn biết ngày đó AI đã dự đoán những số nào và kết quả thực tế ra sao.</p>
+                        </div>
+                    </div>
+
+                    <div class="guide-item">
+                        <div class="guide-icon"><i class="fas fa-history"></i></div>
+                        <div class="guide-content">
+                            <h4>Lịch Sử</h4>
+                            <p>Tra cứu lại bảng kết quả xổ số của những ngày trước đó. Bạn có thể chọn số ngày muốn xem và bấm nút để hiển thị.</p>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>

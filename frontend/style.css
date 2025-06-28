@@ -513,3 +513,67 @@ hr.divider { border: none; height: 1px; background-color: var(--border-color); m
     cursor: help;            /* Đổi con trỏ chuột thành hình dấu hỏi */
     margin-left: 4px;        /* Một chút khoảng cách */
 }
+
+.guide-container {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* Khoảng cách giữa các mục hướng dẫn */
+}
+
+.guide-item {
+    display: flex;
+    gap: 25px;
+    background-color: var(--card-bg);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.guide-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    min-width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e8f0fe; /* Màu nền xanh nhạt cho icon */
+    border-radius: 50%;
+}
+
+.guide-content h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.guide-content p {
+    margin-bottom: 10px;
+    color: var(--text-muted);
+}
+
+.guide-content ul {
+    list-style-type: disc; /* Kiểu danh sách có dấu chấm tròn */
+    padding-left: 20px;
+    color: var(--text-color);
+}
+
+.guide-content ul li {
+    margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+    .guide-item {
+        flex-direction: column; /* Chuyển thành dạng cột trên mobile */
+        align-items: center;
+        text-align: center;
+    }
+
+    .guide-content ul {
+        text-align: left; /* Giữ danh sách căn lề trái */
+        padding-left: 30px;
+    }
+}
