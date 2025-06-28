@@ -2,7 +2,7 @@ name: Daily Data and Model Update
 
 on:
   schedule:
-    - cron: '0 12 * * *'
+    - cron: '0 14 * * *'
   # Cho phép chạy thủ công từ tab Actions trên GitHub
   workflow_dispatch:
 
