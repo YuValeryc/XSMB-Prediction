@@ -39,7 +39,7 @@ jobs:
       
       # Bước 5: Chạy Scraper để lấy dữ liệu mới
       - name: Run Scraper
-        run: python scripts/scraper_fast.py
+        run: python scripts/scraper.py
 
       # Bước 6: Chạy Training để cập nhật model
       - name: Run Model Training
