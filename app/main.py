@@ -86,6 +86,29 @@ def get_prediction_endpoint(top_n: int = 10):
         
     return prediction
 
+@app.get("/history/by-date", tags=["Data"])
+def get_history_by_date(date: str = Query(..., description="Ngày cần tìm theo định dạng YYYY-MM-DD")):
+    """
+    Lấy kết quả xổ số của một ngày cụ thể.
+    """
+    try:
+        target_date = datetime.strptime(date, '%Y-%m-%d').date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Định dạng ngày không hợp lệ. Vui lòng dùng YYYY-MM-DD.")
+    
+    df_history = get_history_data()
+    if df_history.empty:
+        raise HTTPException(status_code=404, detail="Không có dữ liệu lịch sử.")
+    
+    # Chuyển đổi cột 'date' của dataframe sang kiểu date để so sánh
+    result = df_history[df_history['date'].dt.date == target_date]
+    
+    if result.empty:
+        raise HTTPException(status_code=404, detail=f"Không tìm thấy kết quả cho ngày {date}.")
+        
+    # Trả về một danh sách chứa một phần tử (để frontend dễ xử lý)
+    return result.to_dict('records')
+
 @app.get("/stats/number-details/{number}", tags=["Statistics"])
 def get_number_details(number: int):
     """

@@ -1,4 +1,4 @@
-// frontend/script.js (phiên bản đã sắp xếp lại)
+// frontend/script.js (phiên bản đã sắp xếp lại và cập nhật)
 document.addEventListener('DOMContentLoaded', () => {
     console.log('[DEBUG] DOM Content Loaded. Script is running.');
 
@@ -29,12 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Backtest Elements
     const backtestDateSelect = document.getElementById('backtest-date-select');
     const backtestBtn = document.getElementById('backtest-btn');
-    const backtestResultsEl = document.getElementById('backtest-results');
+    // **Lưu ý**: backtestResultsEl không còn được dùng trực tiếp, thay bằng backtest-results-container
 
     // History Elements
     const historyLimitInput = document.getElementById('history-limit-input');
     const showHistoryBtn = document.getElementById('show-history-btn');
-    // **Lưu ý**: historyTableEl không còn được dùng
+    const historyDateInput = document.getElementById('history-date-input');
+    const searchDateBtn = document.getElementById('search-date-btn');
 
     // Chart Elements
     const generateChartBtn = document.getElementById('generate-chart-btn');
@@ -101,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function createResultBoard(resultData) {
         const boardContainer = document.createElement('div');
         boardContainer.className = 'result-board-container';
-
         const prizeLayout = [
             { name: 'G.ĐB', keys: ['special'], class: 'special-prize' },
             { name: 'G.1', keys: ['prize1'] },
@@ -112,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
             { name: 'G.6', keys: ['prize6_1', 'prize6_2', 'prize6_3'] },
             { name: 'G.7', keys: ['prize7_1', 'prize7_2', 'prize7_3', 'prize7_4'], class: 'prize-7' }
         ];
-
         prizeLayout.forEach(prize => {
             const rowDiv = document.createElement('div');
             rowDiv.className = 'result-row';
@@ -153,31 +152,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { aiPredictionsListEl.innerHTML = `<p>Không tải được dự đoán. Lỗi: ${predictions?.error ?? 'Không xác định'}</p>`; }
         hotStatsListEl.innerHTML = ''; coldStatsListEl.innerHTML = '';
         if (hotCold && !hotCold.error) {
-            // Định nghĩa các chuỗi giải thích
             const hotTooltipText = "Là những số có tần suất xuất hiện nhiều nhất trong khoảng thời gian gần đây.";
             const coldTooltipText = "Là những số đã lâu chưa xuất hiện (lô gan).";
-
-            // Thêm thuộc tính `title` vào các thẻ div chứa header
-            hotStatsListEl.innerHTML = `
-                <div class="list-header" title="${hotTooltipText}">
-                    🔥 Số Nóng 
-                    <i class="fas fa-info-circle tooltip-icon"></i>
-                </div>
-                <div class="list-item">
-                    <span class="value">${(hotCold.hot ?? []).join(', ')}</span>
-                </div>`;
-                
-            coldStatsListEl.innerHTML = `
-                <div class="list-header" title="${coldTooltipText}">
-                    ❄️ Số Lạnh (Gan)
-                    <i class="fas fa-info-circle tooltip-icon"></i>
-                </div>
-                <div class="list-item">
-                    <span class="value">${(hotCold.cold ?? []).join(', ')}</span>
-                </div>`;
-        } else { 
-            hotStatsListEl.innerHTML = `<p>Không tải được thống kê. Lỗi: ${hotCold?.error ?? 'Không xác định'}</p>`; 
-        }
+            hotStatsListEl.innerHTML = `<div class="list-header" title="${hotTooltipText}">🔥 Số Nóng <i class="fas fa-info-circle tooltip-icon"></i></div><div class="list-item"><span class="value">${(hotCold.hot ?? []).join(', ')}</span></div>`;
+            coldStatsListEl.innerHTML = `<div class="list-header" title="${coldTooltipText}">❄️ Số Lạnh (Gan) <i class="fas fa-info-circle tooltip-icon"></i></div><div class="list-item"><span class="value">${(hotCold.cold ?? []).join(', ')}</span></div>`;
+        } else { hotStatsListEl.innerHTML = `<p>Không tải được thống kê. Lỗi: ${hotCold?.error ?? 'Không xác định'}</p>`; }
         if (latestResult && !latestResult.error && latestResult.length > 0) {
             const resultData = latestResult[0];
             latestResultDateEl.textContent = new Date(resultData.date).toLocaleDateString('vi-VN');
@@ -196,13 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await callApi(`/stats/number-details/${paddedNumber}`);
         if (!data || data.error) { numberDetailsEl.innerHTML = `<h3>Lỗi</h3><p>${data?.error ?? 'Không thể tải chi tiết.'}</p>`; if (analysisChart) analysisChart.destroy(); return; }
         const freq = data.frequency; 
-        numberDetailsEl.innerHTML = `<h3>Phân tích chi tiết số: <strong>${data.number}</strong></h3>
-        <ul>
-            <li><strong>Tình trạng gan (chưa về):</strong> ${data.last_appearance_days_ago} ngày</li>
-            <li><strong>Tần suất (30 ngày gần nhất):</strong> ${freq.last_30_days} lần</li>
-            <li><strong>Tần suất (90 ngày gần nhất):</strong> ${freq.last_90_days} lần</li>
-            <li><strong>Tổng số lần xuất hiện:</strong> ${freq.total} lần</li>
-        </ul>`; 
+        numberDetailsEl.innerHTML = `<h3>Phân tích chi tiết số: <strong>${data.number}</strong></h3><ul><li><strong>Tình trạng gan (chưa về):</strong> ${data.last_appearance_days_ago} ngày</li><li><strong>Tần suất (30 ngày gần nhất):</strong> ${freq.last_30_days} lần</li><li><strong>Tần suất (90 ngày gần nhất):</strong> ${freq.last_90_days} lần</li><li><strong>Tổng số lần xuất hiện:</strong> ${freq.total} lần</li></ul>`; 
         renderAnalysisChart(data);
     }
     
@@ -230,109 +203,134 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!date) return;
 
         const resultsContainer = document.getElementById('backtest-results-container');
-        resultsContainer.innerHTML = ''; // Xóa kết quả cũ
-        resultsContainer.classList.add('hidden'); // Ẩn đi trong khi tải
+        resultsContainer.innerHTML = ''; 
+        resultsContainer.classList.add('hidden'); 
 
         const data = await callApi('/predict/backtest', { date });
 
         if (data && !data.error) {
             const { ai_prediction, actual_result, hits, hit_count } = data;
             const accuracy = ai_prediction.length > 0 ? ((hit_count / ai_prediction.length) * 100) : 0;
-
-            // Chuyển đổi hits thành Set để tra cứu nhanh hơn
             const hitSet = new Set(hits.map(String));
-
-            // --- Tạo phần tóm tắt ---
-            const summaryHTML = `
-                <h3>Kết quả kiểm tra lại cho ngày ${new Date(date).toLocaleDateString('vi-VN')}</h3>
-                <div class="backtest-summary">
-                    <div class="summary-item">
-                        <span class="label">Số đã dự đoán</span>
-                        <span class="value">${ai_prediction.length}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="label">Số đã trúng</span>
-                        <span class="value hits">${hit_count}</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="label">Tỷ lệ chính xác</span>
-                        <span class="value accuracy">${accuracy.toFixed(1)}%</span>
-                    </div>
-                </div>
-            `;
-
-            // --- Tạo phần chi tiết ---
-            // Danh sách các số AI dự đoán
-            const predictionsHTML = `
-                <div class="backtest-list-container">
-                    <h4>🔮 Các số AI đã dự đoán</h4>
-                    <div class="backtest-list">
-                        ${ai_prediction.map(num => `
-                            <div class="backtest-number ${hitSet.has(String(num)) ? 'hit' : 'miss'}">
-                                ${num}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-
-            // Danh sách các số thực tế đã về
-            const actualsHTML = `
-                <div class="backtest-list-container">
-                    <h4>🎯 Các số Lô thực tế đã về</h4>
-                    <div class="backtest-list">
-                        ${actual_result.map(num => `
-                            <div class="backtest-number">
-                                ${num}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-            
-            // --- Gộp tất cả lại và hiển thị ---
-            resultsContainer.innerHTML = `
-                ${summaryHTML}
-                <div class="backtest-details">
-                    ${predictionsHTML}
-                    ${actualsHTML}
-                </div>
-            `;
-            resultsContainer.classList.remove('hidden'); // Hiển thị kết quả
-
+            const summaryHTML = `<h3>Kết quả kiểm tra lại cho ngày ${new Date(date + 'T00:00:00').toLocaleDateString('vi-VN')}</h3><div class="backtest-summary"><div class="summary-item"><span class="label">Số đã dự đoán</span><span class="value">${ai_prediction.length}</span></div><div class="summary-item"><span class="label">Số đã trúng</span><span class="value hits">${hit_count}</span></div><div class="summary-item"><span class="label">Tỷ lệ chính xác</span><span class="value accuracy">${accuracy.toFixed(1)}%</span></div></div>`;
+            const predictionsHTML = `<div class="backtest-list-container"><h4>🔮 Các số AI đã dự đoán</h4><div class="backtest-list">${ai_prediction.map(num => `<div class="backtest-number ${hitSet.has(String(num)) ? 'hit' : 'miss'}">${num}</div>`).join('')}</div></div>`;
+            const actualsHTML = `<div class="backtest-list-container"><h4>🎯 Các số Lô thực tế đã về</h4><div class="backtest-list">${actual_result.map(num => `<div class="backtest-number">${num}</div>`).join('')}</div></div>`;
+            resultsContainer.innerHTML = `${summaryHTML}<div class="backtest-details">${predictionsHTML}${actualsHTML}</div>`;
+            resultsContainer.classList.remove('hidden'); 
         } else {
             resultsContainer.innerHTML = `<h3>Lỗi</h3><p>Không thể lấy dữ liệu kiểm tra. Lỗi: ${data?.error || 'Không xác định'}</p>`;
             resultsContainer.classList.remove('hidden');
         }
     }
     
-    // --- History Logic (ĐÃ SẮP XẾP LẠI) ---
-    async function showHistory() {
+    // --- History Logic ---
+    function renderHistoryResults(data) {
+        const historyContainer = document.getElementById('history-results-container');
+        historyContainer.innerHTML = ''; 
+
+        if (!data || data.error || data.length === 0) {
+            let errorMessage = 'Không có dữ liệu lịch sử để hiển thị.';
+            if (data && data.error) {
+                errorMessage = `Không tải được lịch sử. Lỗi: ${data.error}`;
+            }
+            historyContainer.innerHTML = `<div class="card"><p>${errorMessage}</p></div>`;
+            return;
+        }
+
+        data.forEach(dailyResult => {
+            const historyCard = document.createElement('div');
+            historyCard.className = 'history-card';
+            
+            const cardHeader = document.createElement('div');
+            cardHeader.className = 'history-card-header';
+            
+            // Chuyển đổi định dạng ngày cho an toàn hơn
+            const dateObj = new Date(dailyResult.date);
+            const dateString = dateObj.toLocaleDateString('vi-VN');
+            const dateValue = dateObj.toISOString().split('T')[0];
+
+            cardHeader.innerHTML = `
+                <span>Kết quả ngày ${dateString}</span>
+                <button class="view-details-btn" data-date="${dateValue}">
+                    <i class="fas fa-search-plus"></i> Xem chi tiết
+                </button>
+            `;
+            
+            const resultBoard = createResultBoard(dailyResult);
+
+            historyCard.appendChild(cardHeader);
+            historyCard.appendChild(resultBoard);
+            historyContainer.appendChild(historyCard);
+
+            historyCard.querySelector('.view-details-btn').addEventListener('click', (e) => {
+                const dateToView = e.currentTarget.getAttribute('data-date');
+                showDateDetails(dateToView);
+            });
+        });
+    }
+
+    // --- SỬA ĐỔI HÀM CŨ VÀ THÊM HÀM MỚI ---
+    // Hàm này sẽ được gọi khi bấm nút "Xem" (danh sách)
+    async function showHistoryByLimit() {
         const limit = historyLimitInput.value;
         const data = await callApi('/history', { limit });
-        const historyContainer = document.getElementById('history-results-container');
+        renderHistoryResults(data); // Gọi hàm render chung
+    }
+    
+    // Hàm mới cho việc tìm kiếm theo ngày
+    async function searchHistoryByDate() {
+        const dateValue = historyDateInput.value;
+        if (!dateValue) {
+            alert('Vui lòng chọn một ngày để tìm kiếm.');
+            return;
+        }
+        const data = await callApi('/history/by-date', { date: dateValue });
+        renderHistoryResults(data); // Tái sử dụng hàm render chung
+    }
+    
+    // --- SỬA ĐỔI ---: Thêm hàm mới cho Modal
+    async function showDateDetails(date) {
+        const modal = document.getElementById('date-details-modal');
+        const modalBody = document.getElementById('modal-body');
+        
+        modalBody.innerHTML = '<div class="loader-container" style="position: static; background: none;"><div class="loader"></div></div>';
+        modal.classList.remove('hidden');
 
+        const data = await callApi('/predict/backtest', { date });
+        
         if (data && !data.error) {
-            historyContainer.innerHTML = '';
-            if (data.length === 0) {
-                historyContainer.innerHTML = `<div class="card"><p>Không có dữ liệu lịch sử để hiển thị.</p></div>`;
-                return;
-            }
-            data.forEach(dailyResult => {
-                const historyCard = document.createElement('div');
-                historyCard.className = 'history-card';
-                const cardHeader = document.createElement('div');
-                cardHeader.className = 'history-card-header';
-                cardHeader.textContent = `Kết quả ngày ${new Date(dailyResult.date).toLocaleDateString('vi-VN')}`;
-                const resultBoard = createResultBoard(dailyResult); // Tái sử dụng hàm tạo bảng kết quả
-                historyCard.appendChild(cardHeader);
-                historyCard.appendChild(resultBoard);
-                historyContainer.appendChild(historyCard);
-            });
+            const { ai_prediction, actual_result, hits, hit_count } = data;
+            const accuracy = ai_prediction.length > 0 ? ((hit_count / ai_prediction.length) * 100) : 0;
+            const hitSet = new Set(hits.map(String));
+
+            const contentHTML = `
+                <h3>Phân tích chi tiết ngày ${new Date(date + 'T00:00:00').toLocaleDateString('vi-VN')}</h3>
+                <div class="backtest-summary">
+                    <div class="summary-item"><span class="label">Số AI dự đoán</span><span class="value">${ai_prediction.length}</span></div>
+                    <div class="summary-item"><span class="label">Số trúng</span><span class="value hits">${hit_count}</span></div>
+                    <div class="summary-item"><span class="label">Tỷ lệ chính xác</span><span class="value accuracy">${accuracy.toFixed(1)}%</span></div>
+                </div>
+                <div class="backtest-details">
+                    <div class="backtest-list-container">
+                        <h4>🔮 Các số AI đã dự đoán</h4>
+                        <div class="backtest-list">
+                            ${ai_prediction.map(num => `<div class="backtest-number ${hitSet.has(String(num)) ? 'hit' : 'miss'}">${num}</div>`).join('') || '<p>Không có dự đoán.</p>'}
+                        </div>
+                    </div>
+                    <div class="backtest-list-container">
+                        <h4>🎯 Kết quả Lô thực tế</h4>
+                        <div class="backtest-list">
+                            ${actual_result.map(num => `<div class="backtest-number">${num}</div>`).join('') || '<p>Không có kết quả.</p>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            modalBody.innerHTML = contentHTML;
         } else {
-            historyContainer.innerHTML = `<div class="card"><p>Không tải được lịch sử. Lỗi: ${data?.error ?? 'Không xác định'}</p></div>`;
+            modalBody.innerHTML = `<h3>Lỗi</h3><p>Không thể lấy dữ liệu phân tích cho ngày này. Lỗi: ${data?.error || 'Không xác định'}</p>`;
         }
     }
+
 
     // --- Charting Logic ---
     function renderBarChart(canvas, title, chartData) {
@@ -383,12 +381,29 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshDashboardBtn.addEventListener('click', updateDashboard);
     inspectNumberBtn.addEventListener('click', inspectNumber);
     backtestBtn.addEventListener('click', runBacktest);
-    showHistoryBtn.addEventListener('click', showHistory);
+    showHistoryBtn.addEventListener('click', showHistoryByLimit);
+    searchDateBtn.addEventListener('click', searchHistoryByDate);
     generateChartBtn.addEventListener('click', generateCharts);
 
+    // --- SỬA ĐỔI ---: Thêm các event listener cho Modal
+    const modal = document.getElementById('date-details-modal');
+    if (modal) {
+        const modalCloseBtn = modal.querySelector('.modal-close-btn');
+        
+        modalCloseBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+    
     // Initial load for the main page
     updateDashboard();
     populateBacktestDates();
     generateCharts(); 
-    showHistory();
+    showHistoryByLimit();
 });
