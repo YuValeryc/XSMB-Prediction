@@ -690,7 +690,6 @@ hr.divider { border: none; height: 1px; background-color: var(--border-color); m
     color: var(--text-muted);
 }
 
-/* Đảm bảo input date có kích thước phù hợp */
 #history-date-input {
     padding: 8px 12px;
 }
